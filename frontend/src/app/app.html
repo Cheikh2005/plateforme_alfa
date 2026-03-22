@@ -1,0 +1,15 @@
+<div class="app-container" *ngIf="!isLoggedIn">
+  <router-outlet></router-outlet>
+</div>
+
+<mat-sidenav-container class="sidenav-container" *ngIf="isLoggedIn">
+  <mat-sidenav #sidenav mode="side" opened class="app-sidenav" [fixedInViewport]="true">
+    <app-sidebar></app-sidebar>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <app-navbar [sidenav]="sidenav"></app-navbar>
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

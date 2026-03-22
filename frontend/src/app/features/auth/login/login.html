@@ -1,0 +1,104 @@
+<div class="login-page">
+  <!-- Hero Header -->
+  <div class="login-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">school</mat-icon>
+      <h1 class="header-title">BacPrep</h1>
+      <p class="header-subtitle">Votre plateforme de révision pour le Baccalauréat</p>
+    </div>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-card-wrapper">
+    <mat-card class="login-card">
+      <mat-card-header>
+        <mat-card-title>Connexion</mat-card-title>
+        <mat-card-subtitle>Entrez vos identifiants pour continuer</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Error Alert -->
+        <div class="error-alert" *ngIf="errorMessage">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+          <!-- Username Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom d'utilisateur</mat-label>
+            <input
+              matInput
+              formControlName="username"
+              placeholder="Entrez votre nom d'utilisateur"
+              autocomplete="username"
+            />
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+              Le nom d'utilisateur est requis
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('username')?.hasError('minlength')">
+              Minimum 3 caractères
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mot de passe</mat-label>
+            <input
+              matInput
+              formControlName="password"
+              [type]="hidePassword ? 'password' : 'text'"
+              placeholder="Entrez votre mot de passe"
+              autocomplete="current-password"
+            />
+            <mat-icon matPrefix>lock</mat-icon>
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="'Afficher le mot de passe'"
+            >
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+              Le mot de passe est requis
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+              Minimum 3 caractères
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Submit Button -->
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="submit-btn"
+            [disabled]="isLoading"
+          >
+            <mat-spinner diameter="20" *ngIf="isLoading" class="btn-spinner"></mat-spinner>
+            <mat-icon *ngIf="!isLoading">login</mat-icon>
+            <span>{{ isLoading ? 'Connexion...' : 'Se connecter' }}</span>
+          </button>
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <div class="card-actions-content">
+          <p class="register-link">
+            Pas encore inscrit ?
+            <a [routerLink]="['/register']" class="link">Créer un compte</a>
+          </p>
+
+          <!-- Demo Hint -->
+          <div class="demo-hint" (click)="fillDemo()">
+            <mat-icon>info</mat-icon>
+            <span>Compte démo : <strong>demo / demo</strong></span>
+          </div>
+        </div>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

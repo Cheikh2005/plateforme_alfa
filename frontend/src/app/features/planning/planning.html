@@ -1,0 +1,224 @@
+<div class="planning-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <mat-icon>calendar_today</mat-icon>
+        Mon Planning
+      </h1>
+      <p class="page-subtitle">Organisez vos révisions et suivez vos tâches</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="toggleForm()" class="create-btn">
+      <mat-icon>{{ showForm ? 'close' : 'add' }}</mat-icon>
+      {{ showForm ? 'Annuler' : 'Créer une tâche' }}
+    </button>
+  </div>
+
+  <!-- Create Form -->
+  <mat-card class="form-card" *ngIf="showForm">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>add_task</mat-icon>
+      <mat-card-title>Nouvelle tâche</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="form-grid">
+        <!-- Titre -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Titre de la tâche *</mat-label>
+          <input matInput [(ngModel)]="newPlanning.titre" placeholder="Ex: Réviser les fonctions dérivées" />
+          <mat-icon matPrefix>title</mat-icon>
+        </mat-form-field>
+
+        <!-- Description -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description (optionnel)</mat-label>
+          <textarea matInput [(ngModel)]="newPlanning.description" rows="2"
+            placeholder="Détails de la tâche..."></textarea>
+          <mat-icon matPrefix>notes</mat-icon>
+        </mat-form-field>
+
+        <!-- Matière + Couleur row -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Matière</mat-label>
+            <mat-select [(ngModel)]="newPlanning.matiereId">
+              <mat-option [value]="null">Aucune matière</mat-option>
+              <mat-option *ngFor="let m of matieres" [value]="m.id">{{ m.nom }}</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>subject</mat-icon>
+          </mat-form-field>
+
+          <div class="color-picker half-width">
+            <label class="color-label">Couleur de la tâche</label>
+            <div class="color-swatches">
+              <div
+                *ngFor="let c of presetColors"
+                class="color-swatch"
+                [style.background-color]="c"
+                [class.selected]="newPlanning.couleur === c"
+                (click)="selectColor(c)">
+                <mat-icon *ngIf="newPlanning.couleur === c">check</mat-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dates row -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Date de début</mat-label>
+            <input matInput type="date" [(ngModel)]="newPlanning.dateDebut" />
+            <mat-icon matPrefix>event</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Date de fin</mat-label>
+            <input matInput type="date" [(ngModel)]="newPlanning.dateFin" />
+            <mat-icon matPrefix>event</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Hours row -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Heure de début</mat-label>
+            <input matInput type="time" [(ngModel)]="newPlanning.heureDebut" />
+            <mat-icon matPrefix>access_time</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Heure de fin</mat-label>
+            <input matInput type="time" [(ngModel)]="newPlanning.heureFin" />
+            <mat-icon matPrefix>access_time</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Rappel -->
+        <div class="rappel-row">
+          <mat-slide-toggle [(ngModel)]="newPlanning.rappel" color="primary">
+            Activer le rappel
+          </mat-slide-toggle>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <div class="form-actions">
+        <button mat-button (click)="toggleForm()">Annuler</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="createPlanning()"
+          [disabled]="!newPlanning.titre"
+          class="save-btn">
+          <mat-icon>save</mat-icon>
+          Créer la tâche
+        </button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button mat-button [class.active-filter]="filterBy === 'all'" (click)="filterBy = 'all'">
+      <mat-icon>list</mat-icon>
+      Toutes ({{ plannings.length }})
+    </button>
+    <button mat-button [class.active-filter]="filterBy === 'pending'" (click)="filterBy = 'pending'">
+      <mat-icon>pending</mat-icon>
+      À faire ({{ pendingPlannings.length }})
+    </button>
+    <button mat-button [class.active-filter]="filterBy === 'done'" (click)="filterBy = 'done'">
+      <mat-icon>check_circle</mat-icon>
+      Terminées ({{ donePlannings.length }})
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement du planning...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredPlannings.length === 0">
+    <mat-icon>event_busy</mat-icon>
+    <h3>Aucune tâche {{ filterBy === 'pending' ? 'en cours' : filterBy === 'done' ? 'terminée' : '' }}</h3>
+    <p *ngIf="filterBy === 'all'">Créez votre première tâche de révision !</p>
+    <button mat-raised-button color="primary" *ngIf="filterBy === 'all'" (click)="showForm = true">
+      <mat-icon>add</mat-icon>
+      Créer une tâche
+    </button>
+  </div>
+
+  <!-- Planning List -->
+  <div class="planning-list" *ngIf="!isLoading && filteredPlannings.length > 0">
+    <div
+      class="planning-task-card"
+      *ngFor="let task of filteredPlannings"
+      [class.task-done]="task.complete"
+      [style.border-left-color]="getMatiereColor(task)">
+
+      <!-- Checkbox -->
+      <div class="task-checkbox">
+        <mat-checkbox
+          [checked]="task.complete"
+          (change)="toggleComplete(task.id)"
+          [style.color]="getMatiereColor(task)"
+          color="primary">
+        </mat-checkbox>
+      </div>
+
+      <!-- Task Content -->
+      <div class="task-content">
+        <div class="task-title-row">
+          <h3 class="task-title" [class.strikethrough]="task.complete">{{ task.titre }}</h3>
+          <div class="task-actions">
+            <button mat-icon-button (click)="deletePlanning(task.id)" class="delete-btn"
+              matTooltip="Supprimer" color="warn">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <p class="task-description" *ngIf="task.description">{{ task.description }}</p>
+
+        <div class="task-meta">
+          <!-- Matiere Chip -->
+          <mat-chip *ngIf="task.matiere"
+            [style.background-color]="getMatiereColor(task) + '20'"
+            [style.color]="getMatiereColor(task)"
+            class="matiere-chip">
+            {{ task.matiere.nom }}
+          </mat-chip>
+
+          <!-- Date -->
+          <span class="meta-item" *ngIf="task.dateDebut">
+            <mat-icon>calendar_today</mat-icon>
+            {{ formatDate(task.dateDebut) }}
+            <span *ngIf="task.dateFin && task.dateFin !== task.dateDebut">
+              → {{ formatDate(task.dateFin) }}
+            </span>
+          </span>
+
+          <!-- Time -->
+          <span class="meta-item" *ngIf="task.heureDebut">
+            <mat-icon>access_time</mat-icon>
+            {{ task.heureDebut }}
+            <span *ngIf="task.heureFin">- {{ task.heureFin }}</span>
+          </span>
+
+          <!-- Rappel -->
+          <span class="rappel-badge" *ngIf="task.rappel">
+            <mat-icon>notifications</mat-icon>
+            Rappel
+          </span>
+
+          <!-- Status -->
+          <mat-chip [class.status-done]="task.complete" [class.status-pending]="!task.complete" class="status-chip">
+            {{ task.complete ? 'Terminé' : 'En cours' }}
+          </mat-chip>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

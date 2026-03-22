@@ -1,0 +1,116 @@
+<div class="exercices-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>assignment</mat-icon>
+      Exercices & Annales
+    </h1>
+    <p class="page-subtitle">Pratiquez avec des QCM, exercices et sujets d'annales</p>
+  </div>
+
+  <!-- Type Filter Tabs -->
+  <div class="type-tabs">
+    <button
+      *ngFor="let t of types"
+      mat-button
+      [class.active-tab]="selectedType === t.value"
+      (click)="filterByType(t.value)"
+      class="type-tab-btn">
+      <mat-icon>{{ t.value === 'QCM' ? 'quiz' : t.value === 'EXERCICE' ? 'assignment' : t.value === 'ANNALE' ? 'history_edu' : 'apps' }}</mat-icon>
+      {{ t.label }}
+      <span class="count-badge">{{ getCountForType(t.value) }}</span>
+    </button>
+  </div>
+
+  <!-- Matiere Filter Chips -->
+  <div class="filter-chips-bar">
+    <mat-chip-listbox aria-label="Filtrer par matière">
+      <mat-chip-option
+        [selected]="selectedMatiereId === null"
+        (click)="filterByMatiere(null)">
+        Toutes les matières
+      </mat-chip-option>
+      <mat-chip-option
+        *ngFor="let m of matieres"
+        [selected]="selectedMatiereId === m.id"
+        (click)="filterByMatiere(m.id)">
+        {{ m.nom }}
+      </mat-chip-option>
+    </mat-chip-listbox>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement des exercices...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!isLoading && errorMessage" style="text-align:center; padding:40px;">
+    <mat-icon style="font-size:48px; height:48px; width:48px; color:#c62828;">wifi_off</mat-icon>
+    <h3 style="margin-top:16px;">{{ errorMessage }}</h3>
+    <button mat-raised-button color="primary" (click)="loadExercices()" style="margin-top:16px;">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Exercices Grid -->
+  <div class="exercices-grid" *ngIf="!isLoading && !errorMessage">
+    <mat-card
+      class="exercice-card"
+      *ngFor="let ex of filteredExercices"
+      (click)="openExercice(ex.id)">
+
+      <!-- Colored Header -->
+      <div class="card-header" [style.background-color]="ex.matiere?.couleur || '#1a237e'">
+        <div class="header-row">
+          <mat-icon class="type-icon">{{ getTypeIcon(ex.type) }}</mat-icon>
+          <div class="badges">
+            <span class="type-badge">{{ ex.type }}</span>
+            <span *ngIf="ex.anneeBac" class="year-badge">{{ ex.anneeBac }}</span>
+          </div>
+        </div>
+        <div class="matiere-label">{{ ex.matiere?.nom }}</div>
+      </div>
+
+      <mat-card-content class="card-body">
+        <h3 class="ex-title">{{ ex.titre }}</h3>
+
+        <div class="ex-meta">
+          <span class="diff-badge" [style.background-color]="getDifficulteColor(ex.difficulte) + '20'" [style.color]="getDifficulteColor(ex.difficulte)">
+            <mat-icon>signal_cellular_alt</mat-icon>
+            {{ getDifficulteLabel(ex.difficulte) }}
+          </span>
+          <span class="meta-item" *ngIf="ex.dureeMinutes">
+            <mat-icon>timer</mat-icon>
+            {{ ex.dureeMinutes }} min
+          </span>
+          <span class="meta-item" *ngIf="ex.pointsTotal">
+            <mat-icon>star</mat-icon>
+            {{ ex.pointsTotal }} pts
+          </span>
+        </div>
+
+        <p class="ex-enonce">{{ ex.enonce | slice:0:100 }}{{ (ex.enonce?.length || 0) > 100 ? '...' : '' }}</p>
+
+        <div class="card-footer">
+          <span class="questions-count" *ngIf="ex.type === 'QCM' && ex.questions">
+            <mat-icon>help_outline</mat-icon>
+            {{ ex.questions.length }} questions
+          </span>
+          <button mat-flat-button color="primary" class="start-btn">
+            Commencer
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredExercices.length === 0">
+      <mat-icon>search_off</mat-icon>
+      <h3>Aucun exercice trouvé</h3>
+      <p>Essayez un autre filtre</p>
+    </div>
+  </div>
+</div>

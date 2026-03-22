@@ -1,0 +1,117 @@
+<div class="cours-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>menu_book</mat-icon>
+      Bibliothèque de Cours
+    </h1>
+    <p class="page-subtitle">Explorez et révisez tous vos cours du Baccalauréat</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Rechercher un cours...</mat-label>
+      <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearch()" placeholder="Titre, chapitre, matière...">
+      <mat-icon matPrefix>search</mat-icon>
+      <button mat-icon-button matSuffix *ngIf="searchText" (click)="searchText=''; onSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
+  <!-- Matiere Filter Chips -->
+  <div class="filter-section">
+    <mat-chip-listbox class="matiere-chips" aria-label="Filtrer par matière">
+      <mat-chip-option
+        [selected]="selectedMatiereId === null"
+        (click)="filterByMatiere(null)"
+        class="chip-all">
+        <mat-icon>apps</mat-icon>
+        Tous ({{ allCours.length }})
+      </mat-chip-option>
+      <mat-chip-option
+        *ngFor="let matiere of matieres"
+        [selected]="selectedMatiereId === matiere.id"
+        (click)="filterByMatiere(matiere.id)"
+        [style.background-color]="selectedMatiereId === matiere.id ? getMatiereColor(matiere) : ''"
+        [style.color]="selectedMatiereId === matiere.id ? 'white' : ''">
+        <mat-icon>{{ matiere.icone || 'subject' }}</mat-icon>
+        {{ matiere.nom }}
+      </mat-chip-option>
+    </mat-chip-listbox>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement des cours...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!isLoading && errorMessage" style="text-align:center; padding:40px;">
+    <mat-icon style="font-size:48px; height:48px; width:48px; color:#c62828;">wifi_off</mat-icon>
+    <h3 style="margin-top:16px;">{{ errorMessage }}</h3>
+    <button mat-raised-button color="primary" (click)="loadData()" style="margin-top:16px;">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Cours Grid -->
+  <div class="cours-grid" *ngIf="!isLoading && !errorMessage">
+    <mat-card
+      class="cours-card"
+      *ngFor="let cours of filteredCours"
+      (click)="openCours(cours.id)"
+      [class.complete]="isComplete(cours.id)">
+
+      <!-- Colored Header -->
+      <div class="card-header" [style.background-color]="getMatiereColor(cours.matiere)">
+        <div class="card-header-content">
+          <span class="matiere-name">{{ cours.matiere.nom }}</span>
+          <mat-icon class="complete-icon" *ngIf="isComplete(cours.id)">check_circle</mat-icon>
+        </div>
+        <div class="chapitre-info">
+          Chapitre {{ cours.numeroChapitre }}
+        </div>
+      </div>
+
+      <mat-card-content class="card-body">
+        <h3 class="cours-title">{{ cours.titre }}</h3>
+        <p class="cours-chapitre">{{ cours.chapitre }}</p>
+
+        <div class="cours-meta">
+          <span class="meta-item">
+            <mat-icon>schedule</mat-icon>
+            {{ cours.dureeLecture }} min
+          </span>
+          <span class="meta-item">
+            <mat-icon>layers</mat-icon>
+            {{ cours.niveau }}
+          </span>
+          <mat-chip class="type-chip">{{ cours.type }}</mat-chip>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">Progression</span>
+            <span class="progress-value">{{ getProgressForCours(cours.id) }}%</span>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="getProgressForCours(cours.id)"
+            [color]="isComplete(cours.id) ? 'accent' : 'primary'">
+          </mat-progress-bar>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredCours.length === 0">
+      <mat-icon>search_off</mat-icon>
+      <h3>Aucun cours trouvé</h3>
+      <p>Essayez un autre filtre de matière</p>
+    </div>
+  </div>
+</div>

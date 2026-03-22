@@ -1,0 +1,159 @@
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+  color: white;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 16px;
+
+  .logo-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff4081, #f50057);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .logo-icon {
+      color: white;
+      font-size: 26px;
+      height: 26px;
+      width: 26px;
+    }
+  }
+
+  .sidebar-title {
+    .app-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.2;
+    }
+
+    .app-subtitle {
+      margin: 2px 0 0;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.2;
+    }
+  }
+}
+
+.header-divider,
+.footer-divider {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  margin: 0 16px;
+}
+
+.nav-list {
+  padding: 8px 0;
+  flex: 1;
+
+  .nav-item {
+    margin: 2px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.75) !important;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: white !important;
+    }
+
+    &.active-item {
+      background-color: rgba(255, 255, 255, 0.18) !important;
+      color: white !important;
+      border-left: 3px solid #ff4081;
+
+      .nav-icon {
+        color: #ff4081 !important;
+      }
+
+      .nav-label {
+        font-weight: 600;
+      }
+    }
+
+    .nav-icon {
+      color: rgba(255, 255, 255, 0.7);
+      transition: color 0.2s ease;
+    }
+
+    .nav-label {
+      font-size: 14px;
+    }
+
+    .active-indicator {
+      color: #ff4081;
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.2);
+
+  .footer-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff4081, #f50057);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: white;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .footer-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .footer-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .footer-serie {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+}
+
+.alfa-branding-sidebar {
+  text-align: center;
+  padding: 8px 16px 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.3px;
+}

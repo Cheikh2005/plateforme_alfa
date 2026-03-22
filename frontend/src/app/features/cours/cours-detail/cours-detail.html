@@ -1,0 +1,101 @@
+<div class="cours-detail-container">
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Chargement du cours...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-state" *ngIf="!isLoading && errorMessage">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="goBack()">Retour aux cours</button>
+  </div>
+
+  <ng-container *ngIf="!isLoading && cours">
+    <!-- Back Button + Header -->
+    <div class="page-topbar">
+      <button mat-button (click)="goBack()" class="back-btn">
+        <mat-icon>arrow_back</mat-icon>
+        Retour aux cours
+      </button>
+
+      <div class="complete-status" *ngIf="isComplete">
+        <mat-icon>check_circle</mat-icon>
+        <span>Cours terminé</span>
+      </div>
+    </div>
+
+    <!-- Course Header Card -->
+    <mat-card class="header-card" [style.border-top]="'4px solid ' + (cours.matiere?.couleur || '#1a237e')">
+      <mat-card-content>
+        <div class="header-content">
+          <div class="header-text">
+            <div class="header-chips">
+              <mat-chip [style.background-color]="cours.matiere?.couleur || '#1a237e'" style="color:white; font-weight:600;">
+                <mat-icon>{{ cours.matiere?.icone || 'subject' }}</mat-icon>
+                {{ cours.matiere?.nom }}
+              </mat-chip>
+              <mat-chip class="type-chip">{{ cours.type }}</mat-chip>
+              <mat-chip class="niveau-chip">{{ cours.niveau }}</mat-chip>
+            </div>
+            <h1 class="cours-title">{{ cours.titre }}</h1>
+            <p class="cours-chapitre">Chapitre {{ cours.numeroChapitre }} – {{ cours.chapitre }}</p>
+            <div class="meta-row">
+              <span class="meta-item">
+                <mat-icon>schedule</mat-icon>
+                {{ cours.dureeLecture }} min de lecture
+              </span>
+              <span class="meta-item">
+                <mat-icon>calendar_today</mat-icon>
+                {{ cours.dateCreation | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Content Card -->
+    <mat-card class="content-card">
+      <mat-card-header>
+        <mat-card-title>Contenu du cours</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="cours-content" [innerHTML]="formattedContent"></div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Summary Card -->
+    <mat-card class="summary-card" *ngIf="cours.resume">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>summarize</mat-icon>
+        <mat-card-title>Résumé</mat-card-title>
+        <mat-card-subtitle>Points clés à retenir</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="cours-resume" [innerHTML]="formattedResume"></div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Complete Button -->
+    <div class="actions-bar">
+      <button mat-button (click)="goBack()" class="back-btn-bottom">
+        <mat-icon>arrow_back</mat-icon>
+        Retour à la liste
+      </button>
+      <button
+        mat-raised-button
+        [color]="isComplete ? 'accent' : 'primary'"
+        (click)="markAsComplete()"
+        [disabled]="isComplete || isMarkingComplete"
+        class="complete-btn">
+        <mat-spinner diameter="20" *ngIf="isMarkingComplete"></mat-spinner>
+        <mat-icon *ngIf="!isMarkingComplete">{{ isComplete ? 'check_circle' : 'done_all' }}</mat-icon>
+        <span>{{ isComplete ? 'Cours terminé !' : 'Marquer comme terminé' }}</span>
+      </button>
+    </div>
+  </ng-container>
+
+</div>

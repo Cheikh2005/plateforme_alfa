@@ -1,0 +1,121 @@
+<div class="chat-container">
+
+  <!-- Chat Header -->
+  <div class="chat-header">
+    <div class="header-left">
+      <div class="ai-avatar">
+        <mat-icon>smart_toy</mat-icon>
+      </div>
+      <div class="header-info">
+        <h2>BacIA</h2>
+        <span class="subtitle">Assistant Pédagogique Intelligent</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <!-- Matiere Selector -->
+      <mat-form-field appearance="outline" class="matiere-select">
+        <mat-label>Matière</mat-label>
+        <mat-select [(ngModel)]="selectedMatiereId">
+          <mat-option [value]="undefined">Toutes les matières</mat-option>
+          <mat-option *ngFor="let m of matieres" [value]="m.id">{{ m.nom }}</mat-option>
+        </mat-select>
+        <mat-icon matPrefix>subject</mat-icon>
+      </mat-form-field>
+      <!-- Clear Button -->
+      <button mat-icon-button (click)="clearChat()" matTooltip="Effacer l'historique" class="clear-btn" [disabled]="messages.length === 0">
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages Area -->
+  <div class="messages-area">
+
+    <!-- Welcome Message -->
+    <div class="welcome-banner" *ngIf="messages.length === 0 && !isLoading">
+      <mat-icon>auto_awesome</mat-icon>
+      <h3>Bienvenue sur BacIA !</h3>
+      <p>Je suis votre assistant pédagogique. Posez-moi vos questions sur les mathématiques, physique, sciences naturelles ou tout autre sujet du Baccalauréat.</p>
+    </div>
+
+    <!-- Message Bubbles -->
+    <div
+      class="message-wrapper"
+      *ngFor="let msg of messages"
+      [class.user-wrapper]="msg.role === 'user'"
+      [class.assistant-wrapper]="msg.role === 'assistant'">
+
+      <!-- Assistant Avatar -->
+      <div class="msg-avatar assistant-av" *ngIf="msg.role === 'assistant'">
+        <mat-icon>smart_toy</mat-icon>
+      </div>
+
+      <div class="message-bubble" [class.user-bubble]="msg.role === 'user'" [class.assistant-bubble]="msg.role === 'assistant'">
+        <div class="msg-content" *ngIf="msg.role === 'user'">{{ msg.content }}</div>
+        <div class="msg-content" *ngIf="msg.role === 'assistant'" [innerHTML]="msg.formattedContent || msg.content"></div>
+        <div class="msg-time">{{ formatTime(msg.time) }}</div>
+      </div>
+
+      <!-- User Avatar -->
+      <div class="msg-avatar user-av" *ngIf="msg.role === 'user'">
+        <mat-icon>person</mat-icon>
+      </div>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="message-wrapper assistant-wrapper" *ngIf="isLoading">
+      <div class="msg-avatar assistant-av">
+        <mat-icon>smart_toy</mat-icon>
+      </div>
+      <div class="typing-indicator assistant-bubble">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <div #messagesEnd></div>
+  </div>
+
+  <!-- Quick Suggestions -->
+  <div class="suggestions-bar" *ngIf="messages.length === 0">
+    <p class="suggestions-label">Suggestions rapides :</p>
+    <div class="suggestions-chips">
+      <button
+        mat-stroked-button
+        *ngFor="let s of quickSuggestions"
+        (click)="sendMessage(s)"
+        class="suggestion-chip">
+        {{ s }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+    <mat-form-field appearance="outline" class="message-input">
+      <mat-label>Posez votre question...</mat-label>
+      <textarea
+        matInput
+        [(ngModel)]="userMessage"
+        (keydown)="onKeyDown($event)"
+        [disabled]="isLoading"
+        rows="1"
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="1"
+        cdkAutosizeMaxRows="4"
+        placeholder="Ex: Explique-moi les intégrales...">
+      </textarea>
+    </mat-form-field>
+    <button
+      mat-fab
+      color="primary"
+      (click)="sendMessage()"
+      [disabled]="!userMessage.trim() || isLoading"
+      class="send-btn"
+      aria-label="Envoyer">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+
+</div>

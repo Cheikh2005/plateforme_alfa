@@ -1,0 +1,217 @@
+<div class="dashboard-container">
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Chargement du tableau de bord...</p>
+  </div>
+
+  <ng-container *ngIf="!isLoading && stats">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+      <div class="banner-content">
+        <div class="welcome-text">
+          <h1>Bonjour {{ stats.prenom }} ! 👋</h1>
+          <p>Prêt à réviser ? Continuez sur votre lancée !</p>
+          <div class="serie-badge">
+            <mat-icon>school</mat-icon>
+            <span>Série {{ stats.serie }}</span>
+          </div>
+        </div>
+        <div class="banner-illustration">
+          <mat-icon class="big-icon">emoji_events</mat-icon>
+        </div>
+      </div>
+      <div class="progression-bar-wrapper">
+        <span class="prog-label">Progression globale</span>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="stats.progressionMoyenne"
+          class="global-progress">
+        </mat-progress-bar>
+        <span class="prog-percent">{{ stats.progressionMoyenne | number:'1.0-0' }}%</span>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card stat-blue">
+        <mat-card-content>
+          <div class="stat-icon-wrapper blue">
+            <mat-icon>menu_book</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.coursComplets }}/{{ stats.totalCours }}</span>
+            <span class="stat-label">Cours Complétés</span>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="getCoursProgressPercent()" color="primary"></mat-progress-bar>
+          <span class="stat-sub">{{ getCoursProgressPercent() }}% complété</span>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-green">
+        <mat-card-content>
+          <div class="stat-icon-wrapper green">
+            <mat-icon>assignment_turned_in</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.exercicesFaits }}</span>
+            <span class="stat-label">Exercices Faits</span>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="getExercicesProgressPercent()" color="accent"></mat-progress-bar>
+          <span class="stat-sub">Sur {{ stats.totalExercices }} exercices</span>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-orange">
+        <mat-card-content>
+          <div class="stat-icon-wrapper orange">
+            <mat-icon>star</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.scoreMoyen | number:'1.0-1' }}%</span>
+            <span class="stat-label">Score Moyen</span>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="stats.scoreMoyen" color="warn"></mat-progress-bar>
+          <span class="stat-sub">Moyenne générale</span>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-purple">
+        <mat-card-content>
+          <div class="stat-icon-wrapper purple">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.tasksDone }}/{{ stats.totalTasks }}</span>
+            <span class="stat-label">Tâches Terminées</span>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="getTasksProgressPercent()"></mat-progress-bar>
+          <span class="stat-sub">{{ getTasksProgressPercent() }}% accompli</span>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="bottom-grid">
+
+      <!-- Recent Scores -->
+      <mat-card class="bottom-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>leaderboard</mat-icon>
+          <mat-card-title>Scores Récents</mat-card-title>
+          <mat-card-subtitle>Vos derniers résultats</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="stats.recentScores && stats.recentScores.length > 0; else noScores">
+            <table mat-table [dataSource]="stats.recentScores" class="scores-table">
+              <ng-container matColumnDef="exercice">
+                <th mat-header-cell *matHeaderCellDef>Exercice</th>
+                <td mat-cell *matCellDef="let row">{{ row.exercice?.titre }}</td>
+              </ng-container>
+              <ng-container matColumnDef="score">
+                <th mat-header-cell *matHeaderCellDef>Score</th>
+                <td mat-cell *matCellDef="let row">
+                  <strong>{{ row.score }}/{{ row.scoreMax }}</strong>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="mention">
+                <th mat-header-cell *matHeaderCellDef>Mention</th>
+                <td mat-cell *matCellDef="let row">
+                  <span class="mention-badge">{{ row.exercice?.difficulte }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let row">{{ formatDate(row.datePassage) }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+          <ng-template #noScores>
+            <div class="empty-state">
+              <mat-icon>assignment</mat-icon>
+              <p>Aucun score pour le moment</p>
+            </div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Upcoming Planning -->
+      <mat-card class="bottom-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>event</mat-icon>
+          <mat-card-title>Planning à Venir</mat-card-title>
+          <mat-card-subtitle>Vos prochaines tâches</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="stats.upcomingPlannings && stats.upcomingPlannings.length > 0; else noPlannings">
+            <div class="planning-item"
+                 *ngFor="let task of stats.upcomingPlannings"
+                 [style.border-left-color]="task.couleur || '#1a237e'">
+              <div class="planning-info">
+                <span class="planning-title">{{ task.titre }}</span>
+                <span class="planning-date">
+                  <mat-icon>calendar_today</mat-icon>
+                  {{ formatDate(task.dateDebut) }}
+                </span>
+              </div>
+              <mat-chip [class.complete]="task.complete">
+                {{ task.complete ? 'Terminé' : 'En cours' }}
+              </mat-chip>
+            </div>
+          </div>
+          <ng-template #noPlannings>
+            <div class="empty-state">
+              <mat-icon>event_available</mat-icon>
+              <p>Aucune tâche planifiée</p>
+            </div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <mat-card class="quick-actions-card">
+      <mat-card-header>
+        <mat-card-title>Actions Rapides</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="actions-grid">
+          <button mat-raised-button color="primary" (click)="navigateTo('/cours')" class="action-btn">
+            <mat-icon>menu_book</mat-icon>
+            <span>Commencer un cours</span>
+          </button>
+          <button mat-raised-button color="accent" (click)="navigateTo('/exercices')" class="action-btn">
+            <mat-icon>quiz</mat-icon>
+            <span>Faire un exercice</span>
+          </button>
+          <button mat-raised-button class="action-btn ai-btn" (click)="navigateTo('/chat')">
+            <mat-icon>smart_toy</mat-icon>
+            <span>Consulter BacIA</span>
+          </button>
+          <button mat-stroked-button color="primary" (click)="navigateTo('/planning')" class="action-btn">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Mon planning</span>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </ng-container>
+
+  <!-- Alfa Conseil Branding -->
+  <div class="alfa-branding">
+    <span>BacPrep &mdash; Propulsé par <strong>Alfa Conseil</strong> &copy; 2024</span>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!isLoading && errorMessage">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadStats()">Réessayer</button>
+  </div>
+
+</div>

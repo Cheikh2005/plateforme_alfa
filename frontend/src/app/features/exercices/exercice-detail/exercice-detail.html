@@ -1,0 +1,210 @@
+<div class="exercice-detail-container">
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Chargement de l'exercice...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-state" *ngIf="!isLoading && errorMessage">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="goBack()">Retour aux exercices</button>
+  </div>
+
+  <ng-container *ngIf="!isLoading && exercice">
+    <!-- Top Bar -->
+    <div class="topbar">
+      <button mat-button (click)="goBack()" class="back-btn">
+        <mat-icon>arrow_back</mat-icon>
+        Exercices
+      </button>
+      <!-- Timer -->
+      <div class="timer" [class.timer-warning]="elapsedMinutes >= (exercice.dureeMinutes || 60)">
+        <mat-icon>timer</mat-icon>
+        <span>{{ timerDisplay }}</span>
+        <span class="timer-limit" *ngIf="exercice.dureeMinutes">/ {{ exercice.dureeMinutes }} min</span>
+      </div>
+    </div>
+
+    <!-- Exercise Header -->
+    <mat-card class="header-card" [style.border-top]="'4px solid ' + (exercice.matiere?.couleur || '#1a237e')">
+      <mat-card-content>
+        <div class="header-chips">
+          <mat-chip [style.background-color]="exercice.matiere?.couleur || '#1a237e'" style="color:white;">
+            {{ exercice.matiere?.nom }}
+          </mat-chip>
+          <mat-chip class="type-chip">{{ exercice.type }}</mat-chip>
+          <mat-chip [style.background-color]="getDifficulteColor(exercice.difficulte) + '20'"
+                    [style.color]="getDifficulteColor(exercice.difficulte)"
+                    style="font-weight:700;">
+            {{ exercice.difficulte }}
+          </mat-chip>
+          <mat-chip *ngIf="exercice.anneeBac" class="year-chip">{{ exercice.anneeBac }}</mat-chip>
+        </div>
+        <h1 class="ex-title">{{ exercice.titre }}</h1>
+        <div class="meta-row">
+          <span class="meta-item" *ngIf="exercice.dureeMinutes">
+            <mat-icon>timer</mat-icon> {{ exercice.dureeMinutes }} min
+          </span>
+          <span class="meta-item" *ngIf="exercice.pointsTotal">
+            <mat-icon>star</mat-icon> {{ exercice.pointsTotal }} points
+          </span>
+          <span class="meta-item" *ngIf="exercice.type === 'QCM' && exercice.questions">
+            <mat-icon>help_outline</mat-icon> {{ exercice.questions.length }} questions
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- ===== QCM MODE ===== -->
+    <ng-container *ngIf="exercice.type === 'QCM'">
+      <!-- Questions (before result) -->
+      <div *ngIf="!showResult">
+        <mat-card class="question-card" *ngFor="let question of exercice.questions; let i = index">
+          <mat-card-content>
+            <div class="question-number">Question {{ i + 1 }}/{{ exercice.questions.length }}</div>
+            <h3 class="question-text">{{ question.enonce }}</h3>
+            <p class="question-points">{{ question.points }} point(s)</p>
+
+            <mat-radio-group
+              [value]="selectedAnswers[question.id]"
+              (change)="selectAnswer(question.id, $event.value)"
+              class="options-group">
+              <mat-radio-button
+                *ngFor="let option of question.options"
+                [value]="option.id"
+                class="option-btn">
+                {{ option.texte }}
+              </mat-radio-button>
+            </mat-radio-group>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Progress Indicator -->
+        <div class="answer-progress">
+          <span>{{ objectKeys(selectedAnswers).length }} / {{ exercice.questions.length }} questions répondues</span>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="(objectKeys(selectedAnswers).length / exercice.questions.length) * 100">
+          </mat-progress-bar>
+        </div>
+
+        <div class="submit-bar">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="submitAnswers()"
+            [disabled]="!allQuestionsAnswered || isSubmitting"
+            class="submit-btn">
+            <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+            <mat-icon *ngIf="!isSubmitting">send</mat-icon>
+            {{ isSubmitting ? 'Soumission...' : 'Soumettre les réponses' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Result View -->
+      <div *ngIf="showResult && result" class="result-section">
+        <mat-card class="result-card" [class]="'result-' + getMentionClass()">
+          <mat-card-content>
+            <div class="result-header">
+              <mat-icon class="result-icon">emoji_events</mat-icon>
+              <div class="result-scores">
+                <span class="score-big">{{ result.score }}/{{ result.scoreMax }}</span>
+                <span class="score-pct">{{ result.pourcentage | number:'1.0-1' }}%</span>
+              </div>
+              <div class="mention-display">
+                <span class="mention-label">Mention</span>
+                <span class="mention-value">{{ result.mention }}</span>
+              </div>
+            </div>
+            <div class="result-details">
+              <span>{{ result.correctAnswers }} bonne(s) réponse(s) sur {{ result.totalQuestions }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Correction Details -->
+        <mat-card class="correction-card" *ngFor="let question of exercice.questions; let i = index">
+          <mat-card-content>
+            <div class="question-result-header">
+              <span class="q-number">Q{{ i + 1 }}</span>
+              <mat-icon [class.correct]="result.resultats[question.id]" [class.wrong]="!result.resultats[question.id]">
+                {{ result.resultats[question.id] ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+            </div>
+            <p class="q-text">{{ question.enonce }}</p>
+            <div class="options-correction">
+              <div
+                *ngFor="let opt of question.options"
+                class="option-result"
+                [class.correct-opt]="opt.estCorrecte"
+                [class.selected-opt]="selectedAnswers[question.id] === opt.id"
+                [class.wrong-opt]="selectedAnswers[question.id] === opt.id && !opt.estCorrecte">
+                <mat-icon *ngIf="opt.estCorrecte">check</mat-icon>
+                <mat-icon *ngIf="selectedAnswers[question.id] === opt.id && !opt.estCorrecte">close</mat-icon>
+                <span>{{ opt.texte }}</span>
+              </div>
+            </div>
+            <div class="explanation" *ngIf="question.explication">
+              <mat-icon>info</mat-icon>
+              <span>{{ question.explication }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <div class="result-actions">
+          <button mat-stroked-button (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+            Retour aux exercices
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ===== EXERCICE / ANNALE MODE ===== -->
+    <ng-container *ngIf="exercice.type === 'EXERCICE' || exercice.type === 'ANNALE'">
+      <mat-card class="enonce-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>description</mat-icon>
+          <mat-card-title>Énoncé</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="enonce-content">{{ exercice.enonce }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Correction Toggle -->
+      <div class="correction-bar">
+        <button
+          mat-raised-button
+          [color]="showCorrection ? 'warn' : 'primary'"
+          (click)="toggleCorrection()"
+          class="correction-btn">
+          <mat-icon>{{ showCorrection ? 'visibility_off' : 'visibility' }}</mat-icon>
+          {{ showCorrection ? 'Masquer la correction' : 'Voir la correction' }}
+        </button>
+      </div>
+
+      <mat-card class="correction-card-main" *ngIf="showCorrection">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>fact_check</mat-icon>
+          <mat-card-title>Correction</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="correction-content">{{ exercice.correction }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="result-actions">
+        <button mat-stroked-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Retour aux exercices
+        </button>
+      </div>
+    </ng-container>
+
+  </ng-container>
+</div>

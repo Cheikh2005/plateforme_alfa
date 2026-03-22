@@ -1,0 +1,23 @@
+<mat-toolbar class="navbar-toolbar">
+  <button mat-icon-button (click)="sidenav.toggle()" class="menu-button" aria-label="Ouvrir le menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <div class="brand" [routerLink]="['/dashboard']">
+    <mat-icon class="brand-icon">school</mat-icon>
+    <span class="brand-name">BacPrep</span>
+  </div>
+
+  <span class="spacer"></span>
+
+  <div class="user-info" *ngIf="authService.currentUser">
+    <div class="user-avatar">
+      <span>{{ getInitials() }}</span>
+    </div>
+    <span class="user-name">{{ authService.currentUser.prenom }} {{ authService.currentUser.nom }}</span>
+  </div>
+
+  <button mat-icon-button class="logout-button" (click)="logout()" aria-label="Se déconnecter" matTooltip="Se déconnecter">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>

@@ -1,0 +1,44 @@
+<div class="sidebar-container">
+  <!-- Logo / Header -->
+  <div class="sidebar-header">
+    <div class="logo-wrapper">
+      <mat-icon class="logo-icon">school</mat-icon>
+    </div>
+    <div class="sidebar-title">
+      <h2 class="app-title">BacPrep</h2>
+      <p class="app-subtitle">by Alfa Conseil</p>
+    </div>
+  </div>
+
+  <mat-divider class="header-divider"></mat-divider>
+
+  <!-- Navigation Items -->
+  <mat-nav-list class="nav-list">
+    <a mat-list-item
+      *ngFor="let item of navItems"
+      [routerLink]="item.route"
+      [class.active-item]="isActive(item.route)"
+      class="nav-item">
+      <mat-icon matListItemIcon class="nav-icon">{{ item.icon }}</mat-icon>
+      <span matListItemTitle class="nav-label">{{ item.label }}</span>
+      <mat-icon matListItemMeta class="active-indicator" *ngIf="isActive(item.route)">chevron_right</mat-icon>
+    </a>
+  </mat-nav-list>
+
+  <span class="spacer"></span>
+
+  <!-- User Info at Bottom -->
+  <mat-divider class="footer-divider"></mat-divider>
+  <div class="sidebar-footer" *ngIf="authService.currentUser">
+    <div class="footer-avatar">
+      <span>{{ authService.currentUser.prenom.charAt(0) }}{{ authService.currentUser.nom.charAt(0) }}</span>
+    </div>
+    <div class="footer-user-info">
+      <span class="footer-name">{{ authService.currentUser.prenom }} {{ authService.currentUser.nom }}</span>
+      <span class="footer-serie">Série {{ authService.currentUser.serie }}</span>
+    </div>
+  </div>
+  <div class="alfa-branding-sidebar">
+    <span>Alfa Conseil &copy; 2024</span>
+  </div>
+</div>
