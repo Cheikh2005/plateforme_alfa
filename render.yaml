@@ -7,10 +7,22 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: DATABASE_URL
+      - key: DATABASE_HOST
         fromDatabase:
           name: plateforme-alfa-db
-          property: connectionString
+          property: host
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: plateforme-alfa-db
+          property: database
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: plateforme-alfa-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: plateforme-alfa-db
+          property: password
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
