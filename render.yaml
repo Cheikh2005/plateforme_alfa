@@ -1,11 +1,9 @@
 services:
   - type: web
     name: plateforme-alfa-api
-    env: java
+    env: docker
     region: frankfurt
     plan: free
-    buildCommand: cd backend && mvn clean package -DskipTests
-    startCommand: java -Dspring.profiles.active=prod -Dserver.port=$PORT -jar backend/target/bacprep-backend-1.0.0.jar
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
