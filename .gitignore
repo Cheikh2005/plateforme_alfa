@@ -2,10 +2,10 @@
 .claude/
 
 # Maven / Spring Boot
-backend/target/
+backend/target/**
+!backend/target/bacprep-backend-1.0.0.jar
 backend/*.iml
 *.class
-*.jar
 *.war
 *.ear
 
